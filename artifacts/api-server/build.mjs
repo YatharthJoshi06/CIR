@@ -9,9 +9,19 @@ await esbuild.build({
   outfile: "dist/index.mjs",
   sourcemap: true,
   external: [
+    // native addons
     "pg-native",
-    "pino-pretty",
     "fsevents",
+    // pino uses worker threads (worker.js) internally — must NOT be bundled
+    "pino",
+    "pino-http",
+    "pino-pretty",
+    "pino-abstract-transport",
+    "sonic-boom",
+    "thread-stream",
+    // workspace packages resolved at runtime via node_modules symlinks
+    "@workspace/db",
+    "@workspace/api-zod",
   ],
   banner: {
     js: `
