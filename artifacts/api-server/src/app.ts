@@ -31,14 +31,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // app.use(cookieParser());
 
-// Root health check for deployment monitors
+// Root health check & favicon for deployment monitors / browsers
 app.get("/", (_req, res) => {
   res.json({ status: "ok", message: "CIR API Server is running" });
 });
 app.get("/healthz", (_req, res) => {
   res.json({ status: "ok" });
 });
+app.get("/favicon.ico", (_req, res) => {
+  res.status(204).end();
+});
 
+// Support both /api/* and root /* to prevent 404s from URL prefix mismatches
 app.use("/api", router);
+app.use(router);
 
 export default app;

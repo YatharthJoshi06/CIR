@@ -3,7 +3,7 @@ let authTokenGetter: (() => string | null) | null = null;
 
 export type AuthTokenGetter = () => string | null;
 
-export function setBaseUrl(url: string) { baseUrl = url; }
+export function setBaseUrl(url: string) { baseUrl = url.replace(/\/+$/, ""); }
 export function setAuthTokenGetter(getter: AuthTokenGetter) { authTokenGetter = getter; }
 
 export class ApiError extends Error {
@@ -31,7 +31,11 @@ export async function customFetch<T>(
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const response = await fetch(`${baseUrl}${url}`, {
+  const cleanBase = baseUrl.replace(/\/+$/, "");
+  const cleanPath = url.startsWith("/") ? url : `/${url}`;
+  const targetUrl = cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
+
+  const response = await fetch(targetUrl, {
     ...options,
     headers,
     credentials: "include",
