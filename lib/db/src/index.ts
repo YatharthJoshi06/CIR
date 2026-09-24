@@ -2,7 +2,34 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import * as schema from "./schema/index.js";
 
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
 const { Pool } = pg;
+
+if (!process.env.DATABASE_URL) {
+  const currentDir = path.dirname(fileURLToPath(import.meta.url));
+  for (const envPath of [
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(currentDir, "../../../.env"),
+    path.resolve(currentDir, "../../.env"),
+    path.resolve(currentDir, "../.env"),
+  ]) {
+    if (fs.existsSync(envPath)) {
+      const lines = fs.readFileSync(envPath, "utf8").split("\n");
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith("#")) {
+          const [k, ...v] = trimmed.split("=");
+          if (k && !process.env[k.trim()]) {
+            process.env[k.trim()] = v.join("=").trim().replace(/^["']|["']$/g, "");
+          }
+        }
+      }
+    }
+  }
+}
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL must be set");
